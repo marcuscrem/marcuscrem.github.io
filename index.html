@@ -1,224 +1,252 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>¡Es una niña! — Revela el nombre</title>
-  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito:wght@300;600&display=swap" rel="stylesheet">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>¡Es una niña! — Revela el nombre</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito:wght@300;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    :root{
+      --bg:#ffeef6;
+      --card:#fff;
+      --accent:#ff5fb4; /* Rosa */
+      --accent2:#8b5cf6;
+      --shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
 
-  <style>
-    :root{
-      --bg:#ffeef6;
-      --card:#fff;
-      --accent:#ff5fb4; /* Rosa */
-      --accent2:#8b5cf6;
-      --shadow: 0 10px 30px rgba(0,0,0,0.12);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;
-      font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-      background: linear-gradient(180deg,var(--bg) 0%, #fff2fb 100%);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      color:#333;
-      overflow: hidden; /* Evitar barras de desplazamiento del confeti */
-    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
 
-    .wrap{
-      width:100%;
-      max-width:520px;
-      text-align:center;
-      position: relative;
-      z-index: 1; 
-    }
+    body{
+      margin:0;
+      font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: linear-gradient(180deg,var(--bg) 0%, #fff2fb 100%);
+      display:flex;
+      flex-direction: column; /* título, tarjeta y botones en columna */
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      color:#333;
+      overflow: hidden; /* Evitar barras de desplazamiento del confeti */
+    }
 
-    h1{
-      font-weight:600;
-      margin:0 0 18px;
-      transition: opacity 300ms ease, transform 300ms ease;
-    }
+    .wrap{
+      width:100%;
+      max-width:520px;
+      text-align:center;
+      position: relative;
+      z-index: 1; 
+    }
 
-    /* Ocultar el título cuando la tarjeta está volteada */
-    .wrap.card-flipped h1#titulo {
-      opacity: 0;
-      transform: translateY(-20px);
-      pointer-events: none;
-    }
+    h1{
+      font-weight:600;
+      margin:0 0 24px; /* separación con la tarjeta */
+      transition: opacity 300ms ease, transform 300ms ease;
+      animation: fadeSlideDown 1s ease forwards;
+    }
 
-    /* escena 3D */
-    .stage{
-      perspective:1200px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      z-index: 1;
-    }
+    .wrap.card-flipped h1#titulo {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+    }
 
-    .card{
-      width:320px;
-      height:380px;
-      position:relative;
-      transform-style:preserve-3d;
-      transition:transform 800ms cubic-bezier(.2,.9,.2,1);
-      cursor:pointer;
-    }
+    .stage{
+      perspective:1200px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index: 1;
+    }
 
-    .card.flipped{transform:rotateY(180deg)}
+    .card{
+      width:320px;
+      height:380px;
+      position:relative;
+      transform-style:preserve-3d;
+      transition:transform 800ms cubic-bezier(.2,.9,.2,1);
+      cursor:pointer;
+      opacity: 0;
+      animation: fadeScaleUp 1s ease 0.5s forwards;
+    }
 
-    .face{
-      position:absolute;inset:0;
-      border-radius:18px;
-      background:var(--card);
-      box-shadow:var(--shadow);
-      backface-visibility:hidden;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:24px;
-      flex-direction:column;
-    }
+    .card.flipped{transform:rotateY(180deg)}
 
-    /* frontal: body blanco con detalle rosa */
-    .front{
-      background:linear-gradient(180deg,#fff 0%, #fffafc 100%);
-    }
+    .face{
+      position:absolute;
+      inset:0;
+      border-radius:18px;
+      background:var(--card);
+      box-shadow:var(--shadow);
+      backface-visibility:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      flex-direction:column;
+    }
 
-    .onesie{
-      width:240px;height:260px;border-radius:18px;position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;
-      background: radial-gradient(circle at 20% 10%, #fff 0%, #fff 40%, #ffeef8 100%);
-      box-shadow: 0 6px 18px rgba(255,95,180,0.08) inset;
-    }
+    .front{
+      background:linear-gradient(180deg,#fff 0%, #fffafc 100%);
+    }
 
-    .sleeve{position:absolute;top:-18px;left:18px;width:60px;height:52px;border-radius:24px;background:var(--card);transform:rotate(-18deg);box-shadow:0 6px 12px rgba(0,0,0,0.06)}
-    .sleeve.right{left:auto;right:18px;transform:rotate(18deg)}
+    .onesie{
+      width:240px;
+      height:260px;
+      border-radius:18px;
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-direction:column;
+      background: radial-gradient(circle at 20% 10%, #fff 0%, #fff 40%, #ffeef8 100%);
+      box-shadow: 0 6px 18px rgba(255,95,180,0.08) inset;
+    }
 
-    .onesie .bow{font-size:14px;color:var(--accent);font-weight:700;margin-bottom:6px}
-    .onesie .hint{font-size:13px;color:#b06b94}
+    .sleeve{position:absolute;top:-18px;left:18px;width:60px;height:52px;border-radius:24px;background:var(--card);transform:rotate(-18deg);box-shadow:0 6px 12px rgba(0,0,0,0.06)}
+    .sleeve.right{left:auto;right:18px;transform:rotate(18deg)}
 
-    /* trasera: nombre bonito */
-    .back{
-      transform:rotateY(180deg);
-      background: linear-gradient(180deg,#fff6fb 0%, #fff 100%);
-      border: 6px solid rgba(139,92,246,0.06);
-    }
+    .onesie .bow{font-size:14px;color:var(--accent);font-weight:700;margin-bottom:6px}
+    .onesie .hint{font-size:13px;color:#b06b94}
 
-    .name{
-      font-family: 'Great Vibes', cursive;
-      font-size:64px;
-      line-height:1;
-      color:var(--accent);
-      text-shadow:0 4px 18px rgba(139,92,246,0.12);
-    }
+    .back{
+      transform:rotateY(180deg);
+      background: linear-gradient(180deg,#fff6fb 0%, #fff 100%);
+      border: 6px solid rgba(139,92,246,0.06);
+    }
 
-    .subtitle{font-size:14px;margin-top:8px;color:#8a5b82}
+    .name{
+      font-family: 'Great Vibes', cursive;
+      font-size:64px;
+      line-height:1;
+      color:var(--accent);
+      text-shadow:0 4px 18px rgba(139,92,246,0.12);
+    }
 
-    /* footer controls */
-    .controls{display:flex;gap:8px;justify-content:center;margin-top:18px; z-index: 1; position: relative;}
-    .btn{
-      background:transparent;border:1px solid rgba(0,0,0,0.06);padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer
-    }
-    .btn.ghost{background:transparent}
+    .subtitle{font-size:14px;margin-top:8px;color:#8a5b82}
 
-    /* Estilos para el canvas de confeti */
-    #confetti-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 0; 
-    }
+    .controls{
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      margin-top:24px;
+      z-index: 1;
+      position: relative;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeSlideUp 1s ease 1s forwards; /* aparecen después de la tarjeta */
+    }
 
-    /* responsive */
-    @media (max-width:420px){
-      .card{width:260px;height:320px}
-      .onesie{width:200px;height:220px}
-      .name{font-size:44px}
-    }
-  </style>
+    .btn{
+      background:transparent;
+      border:1px solid rgba(0,0,0,0.06);
+      padding:8px 12px;
+      border-radius:10px;
+      font-weight:600;
+      cursor:pointer;
+    }
+    .btn.ghost{background:transparent}
+
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0; 
+    }
+
+    @media (max-width:420px){
+      .card{width:260px;height:320px}
+      .onesie{width:200px;height:220px}
+      .name{font-size:44px}
+      .wrap{padding:12px}
+    }
+
+    /* Animaciones */
+    @keyframes fadeSlideDown {
+      0% { opacity:0; transform:translateY(-20px); }
+      100% { opacity:1; transform:translateY(0); }
+    }
+
+    @keyframes fadeScaleUp {
+      0% { opacity:0; transform:scale(0.8); }
+      100% { opacity:1; transform:scale(1); }
+    }
+
+    @keyframes fadeSlideUp {
+      0% { opacity:0; transform:translateY(20px); }
+      100% { opacity:1; transform:translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <canvas id="confetti-canvas"></canvas> 
-  <div class="wrap">
-    <h1 id="titulo">¡Haz clic para revelar!</h1>
-    
+  <canvas id="confetti-canvas"></canvas> 
+  <div class="wrap">
+    <h1 id="titulo">¡Haz clic para revelar!</h1>
 
-    <div class="stage" aria-hidden="false">
-      <div id="card" class="card" role="button" tabindex="0" aria-pressed="false" aria-label="Haz clic para revelar el nombre">
-        <div class="face front">
-          <div class="onesie" aria-hidden="true">
-            <div class="sleeve"></div>
-            <div class="sleeve right"></div>
-            <div style="text-align:center">
-              <div class="bow">Pulsa aquí para descubrir su nombre</div>
-            </div>
-          </div>
-        </div>
+    <div class="stage" aria-hidden="false">
+      <div id="card" class="card" role="button" tabindex="0" aria-pressed="false" aria-label="Haz clic para revelar el nombre">
+        <div class="face front">
+          <div class="onesie" aria-hidden="true">
+            <div class="sleeve"></div>
+            <div class="sleeve right"></div>
+            <div style="text-align:center">
+              <div class="bow">Pulsa aquí para descubrir su nombre</div>
+            </div>
+          </div>
+        </div>
 
-        <div class="face back">
-          <div>
-            <div class="name">Isabel🎀</div>
-          </div>
-        </div>
-      </div>
-    </div>
+        <div class="face back">
+          <div>
+            <div class="name">Isabel🎀</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <div class="controls" aria-hidden="false">
-      <button id="reset" class="btn ghost">Volver a ocultar</button>
-    </div>
+    <div class="controls" aria-hidden="false">
+      <button id="reset" class="btn ghost">Volver a ocultar</button>
+    </div>
+  </div>
 
-  </div>
+  <script>
+    const card = document.getElementById('card');
+    const reset = document.getElementById('reset');
+    const titulo = document.getElementById('titulo');
+    const wrap = document.querySelector('.wrap');
 
-  <script>
-    const card = document.getElementById('card');
-    const reset = document.getElementById('reset');
-    const titulo = document.getElementById('titulo');
-    const wrap = document.querySelector('.wrap'); // Seleccionamos el contenedor principal
+    const confettiSettings = {
+      particleCount: 150,
+      spread: 90,
+      origin: { y: 0.8 }, 
+      colors: ['#ff5fb4', '#ffffff', '#f77fb8', '#8b5cf6'],
+      zIndex: 9999,
+    };
 
-    // Configuración para los confetis
-    const confettiSettings = {
-      particleCount: 150,
-      spread: 90,
-      origin: { y: 0.8 }, 
-      colors: ['#ff5fb4', '#ffffff', '#f77fb8', '#8b5cf6'],
-      zIndex: 9999,
-    };
+    function toggle(){
+      const flipped = card.classList.toggle('flipped');
+      card.setAttribute('aria-pressed', flipped ? 'true' : 'false');
+      wrap.classList.toggle('card-flipped', flipped);
 
-    function toggle(){
-      const flipped = card.classList.toggle('flipped');
-      card.setAttribute('aria-pressed', flipped ? 'true' : 'false');
+      if (flipped) {
+        const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true });
+        myConfetti({ ...confettiSettings, origin: { x: 0.2, y: 0.8 } });
+        myConfetti({ ...confettiSettings, origin: { x: 0.8, y: 0.8 } });
+      }
+    }
 
-      // Control del título y contenedor principal
-      wrap.classList.toggle('card-flipped', flipped);
+    card.addEventListener('click', toggle);
+    card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); toggle(); } });
 
-      // Si la tarjeta está volteada, dispara los fuegos artificiales
-      if (flipped) {
-        const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true });
-        
-        // Disparar dos ráfagas desde los lados para un efecto más amplio
-        myConfetti({ ...confettiSettings, origin: { x: 0.2, y: 0.8 } });
-        myConfetti({ ...confettiSettings, origin: { x: 0.8, y: 0.8 } });
-      
-      }
-    }
-
-    card.addEventListener('click', toggle);
-    card.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); toggle(); } });
-
-    reset.addEventListener('click', ()=>{ 
-      card.classList.remove('flipped'); 
-      card.setAttribute('aria-pressed','false'); 
-      wrap.classList.remove('card-flipped'); 
-    });
-
-    // La funcionalidad de descarga PNG ha sido eliminada.
-  </script>
+    reset.addEventListener('click', ()=>{ 
+      card.classList.remove('flipped'); 
+      card.setAttribute('aria-pressed','false'); 
+      wrap.classList.remove('card-flipped'); 
+    });
+  </script>
 </body>
 </html>
