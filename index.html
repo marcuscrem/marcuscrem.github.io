@@ -5,11 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>¡Es una niña! — Revela el nombre</title>
   <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Nunito:wght@300;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
   <style>
     :root{
       --bg:#ffeef6;
       --card:#fff;
-      --accent:#ff5fb4;
+      --accent:#ff5fb4; /* Rosa */
       --accent2:#8b5cf6;
       --shadow: 0 10px 30px rgba(0,0,0,0.12);
     }
@@ -24,23 +27,29 @@
       justify-content:center;
       padding:24px;
       color:#333;
-      overflow: hidden; /* Evitar barras de desplazamiento si los confetis salen de los límites */
+      overflow: hidden; /* Evitar barras de desplazamiento del confeti */
     }
 
     .wrap{
       width:100%;
       max-width:520px;
       text-align:center;
-      z-index: 1; /* Asegura que el contenido esté por encima de los confetis */
       position: relative;
+      z-index: 1; 
     }
 
     h1{
       font-weight:600;
       margin:0 0 18px;
-      transition: opacity 300ms ease, transform 300ms ease; /* Transición para el título */
+      transition: opacity 300ms ease, transform 300ms ease;
     }
-    p.lead{margin:0 0 24px;color:#6b6b6b}
+
+    /* Ocultar el título cuando la tarjeta está volteada */
+    .wrap.card-flipped h1#titulo {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+    }
 
     /* escena 3D */
     .stage{
@@ -48,7 +57,6 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      position: relative; /* Para el canvas de confeti */
       z-index: 1;
     }
 
@@ -110,8 +118,6 @@
 
     .subtitle{font-size:14px;margin-top:8px;color:#8a5b82}
 
-    .small-instruction{font-size:13px;margin-top:18px;color:#8a6b82}
-
     /* footer controls */
     .controls{display:flex;gap:8px;justify-content:center;margin-top:18px; z-index: 1; position: relative;}
     .btn{
@@ -119,27 +125,28 @@
     }
     .btn.ghost{background:transparent}
 
-    /* responsive */
-    @media (max-width:420px){
-      .card{width:260px;height:320px}
-      .onesie{width:200px;height:220px}
-      .name{font-size:44px}
-    }
-
-    /* Estilos para el canvas de fuegos artificiales */
+    /* Estilos para el canvas de confeti */
     #confetti-canvas {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none; /* Permite hacer clic a través del canvas */
-      z-index: 0; /* Por debajo del contenido */
+      pointer-events: none;
+      z-index: 0; 
+    }
+
+    /* responsive */
+    @media (max-width:420px){
+      .card{width:260px;height:320px}
+      .onesie{width:200px;height:220px}
+      .name{font-size:44px}
     }
   </style>
 </head>
 <body>
-  <canvas id="confetti-canvas"></canvas>   <div class="wrap">
+  <canvas id="confetti-canvas"></canvas> 
+  <div class="wrap">
     <h1 id="titulo">¡Haz clic para revelar!</h1>
     
 
@@ -165,49 +172,40 @@
 
     <div class="controls" aria-hidden="false">
       <button id="reset" class="btn ghost">Volver a ocultar</button>
-                </div>
+    </div>
+
   </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     const card = document.getElementById('card');
     const reset = document.getElementById('reset');
-    const titulo = document.getElementById('titulo'); // Selecciona el título
+    const titulo = document.getElementById('titulo');
+    const wrap = document.querySelector('.wrap'); // Seleccionamos el contenedor principal
 
-    // Configuración para los fuegos artificiales
+    // Configuración para los confetis
     const confettiSettings = {
-      particleCount: 150, // Más partículas
-      spread: 90,        // Más dispersión
-      origin: { y: 0.6 }, // Lanzamiento desde el centro inferior
-      colors: ['#ff5fb4', '#ffffff', '#f77fb8', '#8b5cf6'], // Colores rosa, blanco y un toque de lila
-      zIndex: 9999, // Asegura que estén por encima de todo
+      particleCount: 150,
+      spread: 90,
+      origin: { y: 0.8 }, 
+      colors: ['#ff5fb4', '#ffffff', '#f77fb8', '#8b5cf6'],
+      zIndex: 9999,
     };
 
     function toggle(){
       const flipped = card.classList.toggle('flipped');
       card.setAttribute('aria-pressed', flipped ? 'true' : 'false');
 
-      // Oculta el título al voltear
-      titulo.style.opacity = flipped ? '0' : '1';
-      titulo.style.transform = flipped ? 'translateY(-20px)' : 'translateY(0)';
-      titulo.style.pointerEvents = flipped ? 'none' : 'auto'; // Hace que no sea interactuable cuando está oculto
+      // Control del título y contenedor principal
+      wrap.classList.toggle('card-flipped', flipped);
 
       // Si la tarjeta está volteada, dispara los fuegos artificiales
       if (flipped) {
-        // Inicializa confeti en el canvas creado
         const myConfetti = confetti.create(document.getElementById('confetti-canvas'), { resize: true });
         
-        // Disparar una ráfaga desde el centro
-        myConfetti({ ...confettiSettings, origin: { x: 0.5, y: 0.8 } });
         // Disparar dos ráfagas desde los lados para un efecto más amplio
-        setTimeout(() => {
-          myConfetti({ ...confettiSettings, origin: { x: 0.2, y: 0.8 } });
-          myConfetti({ ...confettiSettings, origin: { x: 0.8, y: 0.8 } });
-        }, 200);
-
-      } else {
-        // Opcional: si quieres borrar los confetis al cerrar
-        // confetti.reset(); // Esto puede ser muy agresivo, la mayoría de confetis desaparecen solos
+        myConfetti({ ...confettiSettings, origin: { x: 0.2, y: 0.8 } });
+        myConfetti({ ...confettiSettings, origin: { x: 0.8, y: 0.8 } });
+      
       }
     }
 
@@ -217,13 +215,10 @@
     reset.addEventListener('click', ()=>{ 
       card.classList.remove('flipped'); 
       card.setAttribute('aria-pressed','false'); 
-      titulo.style.opacity = '1'; // Muestra el título
-      titulo.style.transform = 'translateY(0)'; // Vuelve a su posición original
-      titulo.style.pointerEvents = 'auto';
+      wrap.classList.remove('card-flipped'); 
     });
 
-    // La funcionalidad de descarga PNG fue eliminada ya que no es compatible con el nuevo diseño y las animaciones
-    // download.addEventListener('click', ...); 
+    // La funcionalidad de descarga PNG ha sido eliminada.
   </script>
 </body>
 </html>
